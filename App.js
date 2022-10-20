@@ -1,8 +1,9 @@
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { formatDate } from './helpers';
 import { Feather } from '@expo/vector-icons';
+import { addToStorage, getFromStorage } from './useStorage';
 
 function MyButton({ children, ...rest }) {
   return <TouchableOpacity {...rest}>
@@ -10,9 +11,34 @@ function MyButton({ children, ...rest }) {
   </TouchableOpacity>
 }
 
+function MyTable({ data }) {
+  if (!data) return <></>
+  const keys = Object.keys(data)
+  return <ScrollView className='w-full px-8 py-4'>
+    <View className='flex-row w-full justify-between border border-white border-b-0'>
+      <Text className='text-lg text-white font-semibold w-1/4'>Date</Text>
+      <Text className='text-lg text-white font-semibold w-1/4'>Check In</Text>
+      <Text className='text-lg text-white font-semibold w-1/4'>Check Out</Text>
+    </View>
+    {keys.map((key,index) => (
+      <View
+        className={`flex-row w-full justify-between border border-white
+        ${index === keys.length-1 ? '' : 'border-b-0'}`}
+        key={key}
+      >
+        <Text className='text-md text-white w-1/4'>{key}</Text>
+        <Text className='text-md text-white w-1/4'>{data[key].in && data[key].in}</Text>
+        <Text className='text-md text-white w-1/4'>{data[key].in && data[key].in}</Text>
+      </View>
+    ))}
+  </ScrollView>
+}
+
 export default function App() {
   const [ currDate, setCurrDate ] = useState()
   const [ currTime, setCurrTime ] = useState()
+
+  const [ data, setData ] = useState(null)
   
   const [ showSuccessMessage, setShowSuccessMessage ] = useState(false)
 
@@ -29,9 +55,11 @@ export default function App() {
     }, 1000);
   }, [showSuccessMessage])
 
-  const buttonPress = (type) => {
+  const buttonPress = async (type) => {
     const time = currTime
-    setShowSuccessMessage(true)
+    const date = currDate.toLocaleDateString()
+    const success = await addToStorage(type, time, date)
+    if (success) setShowSuccessMessage(true)
   }
 
   return (
@@ -43,6 +71,11 @@ export default function App() {
         <MyButton onPress={() => buttonPress('in')} >Check In</MyButton>
         <MyButton onPress={() => buttonPress('out')}>Check Out</MyButton>
       </View>
+      <MyButton onPress={async () => {
+        const data = await getFromStorage()
+        setData(currData => (currData ? null : data))
+      }}>{data ? 'Hide Records' : 'Show Records'}</MyButton>
+      <MyTable data={data} />
       {
         showSuccessMessage ?
         <View className='w-48 text-center py-2 rounded absolute bottom-8 bg-white flex-row justify-center'>
