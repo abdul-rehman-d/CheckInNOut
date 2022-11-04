@@ -28,7 +28,7 @@ function MyTable({ data }) {
       >
         <Text className='text-md text-white w-1/4'>{key}</Text>
         <Text className='text-md text-white w-1/4'>{data[key].in && data[key].in}</Text>
-        <Text className='text-md text-white w-1/4'>{data[key].in && data[key].in}</Text>
+        <Text className='text-md text-white w-1/4'>{data[key].out && data[key].out}</Text>
       </View>
     ))}
   </ScrollView>
